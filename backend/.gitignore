@@ -7,3 +7,7 @@ app/eval/_eval_chroma/
 *.egg-info/
 .venv/
 venv/
+
+# Eval run artifacts
+eval_out.txt
+eval_results.json
