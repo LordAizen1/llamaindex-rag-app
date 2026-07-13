@@ -7,8 +7,8 @@ export default function QuotaBadge({ quota }: { quota: QuotaInfo | null }) {
   const low = quota.remaining <= 2;
   return (
     <div
-      title={`Demo cap: ${quota.per_ip_limit} queries per visitor (no reset) · global usage today ${quota.global_used}/${quota.global_daily_cap}`}
-      className={`text-xs rounded-full px-3 py-1 border ${
+      title={`${quota.per_ip_limit} queries per visitor, no reset. ${quota.global_used} of ${quota.global_daily_cap} used across everyone today.`}
+      className={`inline-flex items-center justify-center leading-none text-xs rounded-full px-3 py-1.5 border ${
         low
           ? "border-amber-500/40 text-amber-300 bg-amber-500/10"
           : "border-ink-700 text-slate-400 bg-ink-900/60"

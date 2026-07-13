@@ -1,10 +1,12 @@
 "use client";
 
+import { X } from "@phosphor-icons/react";
 import { useCallback, useRef, useState } from "react";
 import { uploadFiles } from "@/lib/api";
 import { UploadStatus } from "@/lib/types";
 
 interface FileState {
+  id: string;
   name: string;
   status: UploadStatus;
   chunks?: number;
@@ -13,6 +15,9 @@ interface FileState {
 
 const ACCEPT = ".pdf,.docx,.md,.markdown,.txt";
 const ACCEPTED_EXT = ["pdf", "docx", "md", "markdown", "txt"];
+
+let fileSeq = 0;
+const nextFileId = () => `f${++fileSeq}`;
 
 export default function UploadPanel({ onIndexed }: { onIndexed: () => void }) {
   const [dragging, setDragging] = useState(false);
@@ -29,15 +34,22 @@ export default function UploadPanel({ onIndexed }: { onIndexed: () => void }) {
       );
       const invalid = picked.filter((f) => !valid.includes(f));
 
-      setFiles((prev) => [
-        ...prev,
-        ...valid.map((f) => ({ name: f.name, status: "parsing" as UploadStatus })),
+      // Assign ids once here (not inside the setState updater, which Strict Mode
+      // double-invokes) so every row always has a stable, unique id.
+      const queued: FileState[] = [
+        ...valid.map((f) => ({
+          id: nextFileId(),
+          name: f.name,
+          status: "parsing" as UploadStatus,
+        })),
         ...invalid.map((f) => ({
+          id: nextFileId(),
           name: f.name,
           status: "error" as UploadStatus,
           error: "Unsupported file type",
         })),
-      ]);
+      ];
+      setFiles((prev) => [...prev, ...queued]);
 
       if (valid.length === 0) return;
 
@@ -64,6 +76,8 @@ export default function UploadPanel({ onIndexed }: { onIndexed: () => void }) {
     },
     [onIndexed]
   );
+
+  const removeFile = (id: string) => setFiles((prev) => prev.filter((f) => f.id !== id));
 
   return (
     <div>
@@ -96,29 +110,37 @@ export default function UploadPanel({ onIndexed }: { onIndexed: () => void }) {
         <p className="text-sm text-slate-300">
           <span className="text-accent font-medium">Drop files</span> or click to upload
         </p>
-        <p className="text-xs text-slate-500 mt-1">PDF, DOCX, or Markdown · up to 20 MB each</p>
+        <p className="text-xs text-slate-500 mt-1">PDF, DOCX, or Markdown, up to 20 MB each</p>
       </div>
 
       {files.length > 0 && (
-        <ul className="mt-3 space-y-1.5">
-          {files.map((f, i) => (
+        <ul className="mt-3 space-y-1.5 h-40 overflow-y-auto scroll-thin -mr-1 pr-1">
+          {files.map((f) => (
             <li
-              key={i}
-              className="flex items-center gap-2 text-sm rounded-lg border border-ink-700 bg-ink-900/50 px-3 py-2"
+              key={f.id}
+              className="text-sm rounded-lg border border-ink-700 bg-ink-900/50 px-3 py-2"
             >
-              <StatusDot status={f.status} />
-              <span className="truncate text-slate-200">{f.name}</span>
-              <span className="ml-auto text-xs shrink-0">
-                {f.status === "indexed" && (
-                  <span className="text-emerald-400">{f.chunks} chunks</span>
-                )}
-                {f.status === "parsing" && <span className="text-slate-400">indexing…</span>}
-                {f.status === "error" && (
-                  <span className="text-rose-400" title={f.error}>
-                    {f.error}
-                  </span>
-                )}
-              </span>
+              <div className="flex items-center gap-2 min-w-0">
+                <StatusDot status={f.status} />
+                <span className="truncate text-slate-200 min-w-0">{f.name}</span>
+                <span className="ml-auto shrink-0 text-xs flex items-center gap-2">
+                  {f.status === "indexed" && (
+                    <span className="text-emerald-400">{f.chunks} chunks</span>
+                  )}
+                  {f.status === "parsing" && <span className="text-slate-400">indexing…</span>}
+                  <button
+                    onClick={() => removeFile(f.id)}
+                    aria-label={`Dismiss ${f.name}`}
+                    title="Dismiss"
+                    className="grid place-items-center w-5 h-5 rounded text-slate-500 hover:text-slate-100 hover:bg-ink-700 transition-colors"
+                  >
+                    <X size={13} weight="bold" />
+                  </button>
+                </span>
+              </div>
+              {f.status === "error" && f.error && (
+                <p className="mt-1 text-xs text-rose-400 break-words">{f.error}</p>
+              )}
             </li>
           ))}
         </ul>

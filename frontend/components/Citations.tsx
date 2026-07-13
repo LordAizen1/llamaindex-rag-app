@@ -21,7 +21,7 @@ function CitationRow({ c, index }: { c: Citation; index: number }) {
         <span className="text-xs font-mono text-accent shrink-0">[{index + 1}]</span>
         <span className="text-sm text-slate-200 truncate">{c.source}</span>
         {loc && (
-          <span className="text-xs text-slate-400 shrink-0 rounded bg-ink-700 px-1.5 py-0.5">
+          <span className="inline-flex items-center leading-none text-xs text-slate-400 shrink-0 rounded bg-ink-700 px-1.5 py-1">
             {loc}
           </span>
         )}
@@ -68,11 +68,11 @@ export default function Citations({ citations }: { citations: Citation[] }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
         </svg>
         Sources
-        <span className="normal-case rounded-full bg-ink-700 text-slate-300 px-1.5 py-0.5 text-[11px]">
+        <span className="inline-flex items-center leading-none normal-case rounded-full bg-ink-700 text-slate-300 px-1.5 py-1 text-[11px]">
           {citations.length}
         </span>
         <span className="normal-case text-slate-600 font-normal">
-          {open ? "" : "· click to reveal retrieved text"}
+          {open ? "" : "click to see the text"}
         </span>
       </button>
       {open && (

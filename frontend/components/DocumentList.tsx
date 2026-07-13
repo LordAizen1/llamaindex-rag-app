@@ -26,7 +26,7 @@ export default function DocumentList({
   if (documents.length === 0) {
     return (
       <p className="text-sm text-slate-500 py-4 text-center">
-        No documents indexed yet.
+        Nothing uploaded yet.
       </p>
     );
   }
@@ -39,7 +39,7 @@ export default function DocumentList({
           className="rounded-lg border border-ink-700 bg-ink-900/50 px-3 py-2"
         >
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[10px] font-mono uppercase text-accent/80 shrink-0 rounded bg-accent-soft/10 border border-accent/20 px-1.5 py-0.5">
+            <span className="inline-flex items-center leading-none text-[10px] font-mono uppercase text-accent/80 shrink-0 rounded bg-accent-soft/10 border border-accent/20 px-1.5 py-1">
               {d.file_type || "?"}
             </span>
             <span className="truncate text-sm text-slate-200" title={d.source}>
@@ -51,14 +51,14 @@ export default function DocumentList({
             <button
               onClick={() => act(d.source, () => reindexDocument(d.source))}
               disabled={busy === d.source}
-              className="text-xs px-2 py-1 rounded border border-ink-700 text-slate-400 hover:text-white hover:border-accent/50 disabled:opacity-40"
+              className="inline-flex items-center justify-center leading-none text-xs px-2 py-1.5 rounded border border-ink-700 text-slate-400 hover:text-white hover:border-accent/50 disabled:opacity-40"
             >
               {busy === d.source ? "…" : "Re-index"}
             </button>
             <button
               onClick={() => act(d.source, () => deleteDocument(d.source))}
               disabled={busy === d.source}
-              className="text-xs px-2 py-1 rounded border border-ink-700 text-rose-400 hover:border-rose-500/50 disabled:opacity-40"
+              className="inline-flex items-center justify-center leading-none text-xs px-2 py-1.5 rounded border border-ink-700 text-rose-400 hover:border-rose-500/50 disabled:opacity-40"
             >
               Delete
             </button>

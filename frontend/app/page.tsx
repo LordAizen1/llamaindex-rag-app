@@ -39,7 +39,7 @@ export default function Home() {
           <div>
             <h1 className="text-lg font-semibold text-white leading-tight">RAG Document Q&amp;A</h1>
             <p className="text-xs text-slate-500">
-              Ask across your documents — grounded answers with visible citations
+              Upload your docs, ask questions, and see the sources behind every answer
             </p>
           </div>
         </div>
@@ -75,20 +75,20 @@ export default function Home() {
         </section>
 
         {/* Sidebar column */}
-        <aside className="order-1 lg:order-2 space-y-5">
-          <div className="rounded-2xl border border-ink-700 bg-ink-900/30 p-4">
+        <aside className="order-1 lg:order-2 flex flex-col gap-5 lg:h-[59rem]">
+          <div className="rounded-2xl border border-ink-700 bg-ink-900/30 p-4 shrink-0">
             <h2 className="text-sm font-medium text-slate-200 mb-3">Add documents</h2>
             <UploadPanel onIndexed={refreshDocs} />
           </div>
 
-          <div className="rounded-2xl border border-ink-700 bg-ink-900/30 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-medium text-slate-200">
-                Indexed documents
-              </h2>
-              <span className="text-xs text-slate-500">{documents.length}</span>
+          <div className="rounded-2xl border border-ink-700 bg-ink-900/30 p-4 flex flex-col lg:flex-1 lg:min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <h2 className="text-sm font-medium text-slate-200">Indexed documents</h2>
+              {/* <span className="text-xs text-slate-500">{documents.length}</span> */}
             </div>
-            <DocumentList documents={documents} onChange={refreshDocs} />
+            <div className="h-64 lg:h-auto lg:flex-1 lg:min-h-0 overflow-y-auto scroll-thin -mr-1 pr-1">
+              <DocumentList documents={documents} onChange={refreshDocs} />
+            </div>
           </div>
 
           <StatsCard documents={documents} />

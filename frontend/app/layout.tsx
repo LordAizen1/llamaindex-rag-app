@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "RAG Document Q&A",
   description:
-    "Ask questions across your documents with retrieval-augmented generation — grounded answers with visible citations.",
+    "Upload your documents and ask questions about them. Every answer shows you where it came from.",
 };
 
 export default function RootLayout({
