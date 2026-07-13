@@ -1,0 +1,177 @@
+[
+  {
+    "id": 1,
+    "question": "How many days of paid time off do full-time employees get per year?",
+    "expected_answer": "Full-time employees accrue 20 days of PTO per year.",
+    "expected_source": "acme-employee-handbook.md",
+    "expected_keywords": ["20 days", "PTO"]
+  },
+  {
+    "id": 2,
+    "question": "How much unused PTO can be carried over to the next year?",
+    "expected_answer": "Up to 5 days of unused PTO may be carried over; anything above 5 days is forfeited.",
+    "expected_source": "acme-employee-handbook.md",
+    "expected_keywords": ["5 days", "carried over"]
+  },
+  {
+    "id": 3,
+    "question": "How many days per week can employees work remotely?",
+    "expected_answer": "Up to 3 days per week with manager approval.",
+    "expected_source": "acme-employee-handbook.md",
+    "expected_keywords": ["3 days"]
+  },
+  {
+    "id": 4,
+    "question": "What are the core collaboration hours for remote employees?",
+    "expected_answer": "10:00 AM to 3:00 PM Pacific Time.",
+    "expected_source": "acme-employee-handbook.md",
+    "expected_keywords": ["10:00 AM", "3:00 PM"]
+  },
+  {
+    "id": 5,
+    "question": "Do business expenses under $75 require a receipt?",
+    "expected_answer": "No, business expenses under $75 do not require a receipt.",
+    "expected_source": "acme-employee-handbook.md",
+    "expected_keywords": ["$75", "receipt"]
+  },
+  {
+    "id": 6,
+    "question": "Within how many days must expenses of $75 or more be submitted?",
+    "expected_answer": "Within 30 days.",
+    "expected_source": "acme-employee-handbook.md",
+    "expected_keywords": ["30 days"]
+  },
+  {
+    "id": 7,
+    "question": "How many weeks of paid parental leave does the primary caregiver receive?",
+    "expected_answer": "16 weeks of paid parental leave.",
+    "expected_source": "acme-employee-handbook.md",
+    "expected_keywords": ["16 weeks"]
+  },
+  {
+    "id": 8,
+    "question": "What screen lock timeout is required on company laptops?",
+    "expected_answer": "The screen lock must be set to 5 minutes.",
+    "expected_source": "acme-employee-handbook.md",
+    "expected_keywords": ["5 minutes"]
+  },
+  {
+    "id": 9,
+    "question": "How quickly must a lost or stolen device be reported?",
+    "expected_answer": "Within 24 hours, to IT Security.",
+    "expected_source": "acme-employee-handbook.md",
+    "expected_keywords": ["24 hours"]
+  },
+  {
+    "id": 10,
+    "question": "What is the current stable version of the Nimbus API?",
+    "expected_answer": "The current stable version is v3.",
+    "expected_source": "nimbus-api-guide.md",
+    "expected_keywords": ["v3"]
+  },
+  {
+    "id": 11,
+    "question": "How do you authenticate requests to the Nimbus API?",
+    "expected_answer": "With an API key passed as a Bearer token in the Authorization header.",
+    "expected_source": "nimbus-api-guide.md",
+    "expected_keywords": ["Bearer", "Authorization"]
+  },
+  {
+    "id": 12,
+    "question": "What is the default rate limit for the Nimbus API?",
+    "expected_answer": "1,000 requests per minute per API key.",
+    "expected_source": "nimbus-api-guide.md",
+    "expected_keywords": ["1,000 requests", "per minute"]
+  },
+  {
+    "id": 13,
+    "question": "What HTTP status code is returned when the rate limit is exceeded?",
+    "expected_answer": "HTTP status 429, with a Retry-After header.",
+    "expected_source": "nimbus-api-guide.md",
+    "expected_keywords": ["429"]
+  },
+  {
+    "id": 14,
+    "question": "How many items can a list endpoint return per page?",
+    "expected_answer": "At most 100 items per page.",
+    "expected_source": "nimbus-api-guide.md",
+    "expected_keywords": ["100 items"]
+  },
+  {
+    "id": 15,
+    "question": "What is the largest file that can be uploaded with a single PUT request?",
+    "expected_answer": "Up to 5 GB with a single PUT request; larger files need multipart upload.",
+    "expected_source": "nimbus-api-guide.md",
+    "expected_keywords": ["5 GB"]
+  },
+  {
+    "id": 16,
+    "question": "What does a 403 error from the Nimbus API indicate?",
+    "expected_answer": "The API key lacks the required scope.",
+    "expected_source": "nimbus-api-guide.md",
+    "expected_keywords": ["403", "scope"]
+  },
+  {
+    "id": 17,
+    "question": "How are Nimbus webhook payloads signed?",
+    "expected_answer": "With an HMAC-SHA256 signature in the X-Nimbus-Signature header.",
+    "expected_source": "nimbus-api-guide.md",
+    "expected_keywords": ["HMAC-SHA256"]
+  },
+  {
+    "id": 18,
+    "question": "What is the rate limit for batch endpoints?",
+    "expected_answer": "100 requests per minute.",
+    "expected_source": "nimbus-api-guide.md",
+    "expected_keywords": ["100 requests"]
+  },
+  {
+    "id": 19,
+    "question": "What is the balanced chemical equation for photosynthesis?",
+    "expected_answer": "6 CO2 + 6 H2O + light energy -> C6H12O6 + 6 O2.",
+    "expected_source": "photosynthesis-primer.md",
+    "expected_keywords": ["6 CO2", "C6H12O6"]
+  },
+  {
+    "id": 20,
+    "question": "In which organelle does photosynthesis take place?",
+    "expected_answer": "In the chloroplasts.",
+    "expected_source": "photosynthesis-primer.md",
+    "expected_keywords": ["chloroplast"]
+  },
+  {
+    "id": 21,
+    "question": "Which pigment absorbs light for photosynthesis?",
+    "expected_answer": "Chlorophyll.",
+    "expected_source": "photosynthesis-primer.md",
+    "expected_keywords": ["chlorophyll"]
+  },
+  {
+    "id": 22,
+    "question": "Where in the chloroplast does the Calvin cycle occur?",
+    "expected_answer": "In the stroma.",
+    "expected_source": "photosynthesis-primer.md",
+    "expected_keywords": ["stroma"]
+  },
+  {
+    "id": 23,
+    "question": "What is the key enzyme of the Calvin cycle?",
+    "expected_answer": "RuBisCO.",
+    "expected_source": "photosynthesis-primer.md",
+    "expected_keywords": ["RuBisCO"]
+  },
+  {
+    "id": 24,
+    "question": "What gas is released as a byproduct of photosynthesis?",
+    "expected_answer": "Oxygen.",
+    "expected_source": "photosynthesis-primer.md",
+    "expected_keywords": ["oxygen"]
+  },
+  {
+    "id": 25,
+    "question": "Name an example of a C4 plant.",
+    "expected_answer": "Maize or sugarcane.",
+    "expected_source": "photosynthesis-primer.md",
+    "expected_keywords": ["maize", "sugarcane"]
+  }
+]
