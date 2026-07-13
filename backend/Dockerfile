@@ -17,9 +17,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY app ./app
 COPY samples ./samples
 
-# Persistent storage (Chroma + uploads). Mount a Railway volume here in prod.
+# Persistent storage (Chroma + uploads). Mount a Railway volume at /app/storage
+# in prod; no Dockerfile VOLUME because Railway rejects it (use Railway Volumes).
 RUN mkdir -p storage
-VOLUME ["/app/storage"]
 
 EXPOSE 8000
 
