@@ -17,7 +17,9 @@ QA_PROMPT = PromptTemplate(
     "Rules:\n"
     "1. Use ONLY the context below. Do not use prior knowledge.\n"
     f'2. If the context does not contain the answer, reply exactly: "{NOT_FOUND_MESSAGE}"\n'
-    "3. Be concise and cite specifics from the context.\n\n"
+    "3. Be concise and answer in plain prose.\n"
+    "4. Do NOT mention file names, page numbers, or where the information came from. "
+    "The sources are shown to the user separately, so citing them in your answer is redundant.\n\n"
     "---------------------\n"
     "{context_str}\n"
     "---------------------\n"
