@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.env
+backend/storage/
+backend/app/eval/_eval_chroma/
+
+# Node / Next
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# Misc
+.DS_Store
+.venv/
+venv/
