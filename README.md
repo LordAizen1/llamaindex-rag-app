@@ -214,22 +214,26 @@ What it reports per config:
 
 ## Eval results across chunking configs
 
-> Sample output from `python -m app.eval.run_eval` (25 questions). The exact
+> Output from `python -m app.eval.run_eval` (25 questions across 6 configs). Exact
 > numbers move around with model version and API latency, so regenerate them with
 > the command above.
 
-| chunk | overlap | top_k | #chunks | hit_rate | answer_acc | latency(ms) |
-|-------|---------|-------|---------|----------|-----------|-------------|
-| 512   | 64      | 5     | 24      | 96.0%    | 96.0%     | 780         |
-| 256   | 64      | 5     | 41      | 96.0%    | 92.0%     | 720         |
-| 1024  | 64      | 5     | 14      | 88.0%    | 88.0%     | 810         |
-| 512   | 64      | 3     | 24      | 92.0%    | 88.0%     | 690         |
-| 256   | 64      | 3     | 41      | 88.0%    | 84.0%     | 650         |
-| 1024  | 64      | 3     | 14      | 80.0%    | 80.0%     | 700         |
+| chunk | overlap | top_k | hit_rate | answer_acc | latency(ms) |
+|-------|---------|-------|----------|-----------|-------------|
+| 256   | 64      | 3     | 100.0%   | 96.0%     | 3265        |
+| 512   | 64      | 3     | 100.0%   | 96.0%     | 2840        |
+| 512   | 64      | 5     | 100.0%   | 96.0%     | 2331        |
+| 1024  | 64      | 3     | 100.0%   | 96.0%     | 1893        |
+| 1024  | 64      | 5     | 100.0%   | 96.0%     | 2048        |
+| 256   | 64      | 5     | 100.0%   | 92.0%     | 2944        |
 
-On this small corpus, ~512-token chunks with `top_k=5` answered best. Very small
-chunks split facts apart and miss at low top_k; very large chunks pull in extra
-noise and hurt precision.
+On this small, curated corpus retrieval saturates: every config lands the right
+chunk in the top-k (100% hit rate), so search isn't the bottleneck here. Answer
+accuracy holds at 96% across configs, with the one dip at 256-token chunks and
+`top_k=5`, where more, smaller fragments hand the model noisier context. The app
+ships `512 / top_k=5` — top accuracy with latency in the better half of the range.
+On a larger corpus the configs would start to separate on hit rate; the harness
+exists to catch exactly that.
 
 ## Deploy to Railway
 
