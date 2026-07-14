@@ -203,6 +203,9 @@ python -m app.eval.run_eval
 
 # Custom grid:
 python -m app.eval.run_eval --chunk-sizes 256 512 1024 --overlaps 0 64 128 --top-k 3 5 --json results.json
+
+# Score against your own question set (indexes whatever is in samples/):
+python -m app.eval.run_eval --eval-set path/to/your_eval_set.json
 ```
 
 What it reports per config:

@@ -53,8 +53,8 @@ JUDGE_PROMPT = PromptTemplate(
 )
 
 
-def load_eval_set() -> list[dict]:
-    with open(EVAL_SET_PATH, "r", encoding="utf-8") as f:
+def load_eval_set(path: str | None = None) -> list[dict]:
+    with open(path or EVAL_SET_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -150,6 +150,7 @@ def main() -> None:
     parser.add_argument("--overlaps", type=int, nargs="+", default=[64])
     parser.add_argument("--top-k", type=int, nargs="+", default=[3, 5])
     parser.add_argument("--json", type=str, default=None, help="Optional path to write raw results.")
+    parser.add_argument("--eval-set", type=str, default=None, help="Path to an alternative eval set JSON (defaults to eval_set.json).")
     args = parser.parse_args()
 
     settings = get_settings()
@@ -157,7 +158,7 @@ def main() -> None:
         raise SystemExit("OPENAI_API_KEY is not set. Add it to backend/.env before running the eval.")
 
     llm = configure(settings)
-    eval_set = load_eval_set()
+    eval_set = load_eval_set(args.eval_set)
     os.makedirs(EVAL_CHROMA_DIR, exist_ok=True)
     client = chromadb.PersistentClient(path=EVAL_CHROMA_DIR)
 
