@@ -30,6 +30,7 @@ export interface ConfigInfo {
   chunk_size: number;
   chunk_overlap: number;
   top_k: number;
+  retrieval_mode: string;
   max_tokens: number;
   max_upload_mb: number;
   per_ip_query_limit: number;

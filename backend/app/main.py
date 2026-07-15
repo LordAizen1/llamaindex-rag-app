@@ -73,6 +73,7 @@ def config(settings: Settings = Depends(get_settings)) -> dict:
         "chunk_size": settings.chunk_size,
         "chunk_overlap": settings.chunk_overlap,
         "top_k": settings.top_k,
+        "retrieval_mode": settings.retrieval_mode,
         "max_tokens": settings.max_tokens,
         "max_upload_mb": settings.max_upload_mb,
         "per_ip_query_limit": settings.per_ip_query_limit,

@@ -59,7 +59,11 @@ export default function StatsCard({ documents }: { documents: DocumentInfo[] }) 
         <Row
           icon={<MagnifyingGlass size={14} />}
           label="Retrieval"
-          value={config ? `top-${config.top_k}` : "…"}
+          value={
+            config
+              ? `${config.retrieval_mode === "hybrid" ? "hybrid" : "vector"} · top-${config.top_k}`
+              : "…"
+          }
         />
       </div>
     </div>

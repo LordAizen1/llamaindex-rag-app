@@ -48,9 +48,11 @@ Docker, Railway.
   keeps metadata with it (page number for PDFs, section heading for DOCX and
   Markdown). The text is split into chunks with a configurable size and overlap,
   and every chunk carries that metadata.
-- **Retrieval:** top-k vector search over ChromaDB. The prompt tells the model to
-  answer only from the retrieved chunks, and to return a fixed "not found" line
-  when the answer isn't there.
+- **Retrieval:** hybrid search over ChromaDB — a lexical BM25 retriever and the
+  semantic vector retriever fused with Reciprocal Rank Fusion (toggle to
+  vector-only with `RETRIEVAL_MODE`). The prompt tells the model to answer only
+  from the retrieved chunks, and to return a fixed "not found" line when the
+  answer isn't there.
 - **Streaming:** answers stream to the browser over SSE. The first message carries
   the citations so sources show up right away, and the last one carries latency
   and token counts.
@@ -59,6 +61,9 @@ Docker, Railway.
 
 **RAG**
 - Upload multiple PDF, DOCX, or Markdown files at once.
+- Hybrid retrieval: BM25 (lexical) + vector (semantic), fused with Reciprocal
+  Rank Fusion, so exact tokens (codes, numbers, rare names) and paraphrases both
+  surface. Falls back to vector-only via `RETRIEVAL_MODE`.
 - Chunk size, overlap, and top-k are configurable, so the eval can vary them.
 - Each chunk keeps its source filename, page (PDF), and section heading (DOCX/MD).
 - Every answer comes with citations you can expand to see the exact chunk text.
@@ -133,6 +138,7 @@ Backend (`backend/.env`, see `backend/.env.example`):
 | `EMBED_MODEL` | `text-embedding-3-large` | Embedding model. |
 | `CHUNK_SIZE` / `CHUNK_OVERLAP` | `512` / `64` | Chunking defaults. |
 | `TOP_K` | `5` | Retrieved chunks per query. |
+| `RETRIEVAL_MODE` | `hybrid` | `hybrid` (BM25 + vector, RRF-fused) or `vector` (semantic only). |
 | `MAX_TOKENS` | `512` | Response cap. |
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN` | — | Blank means in-memory fallback. |
 | `PER_IP_QUERY_LIMIT` | `10` | Permanent lifetime query cap per IP (no reset). |
@@ -206,6 +212,10 @@ python -m app.eval.run_eval --chunk-sizes 256 512 1024 --overlaps 0 64 128 --top
 
 # Score against your own question set (indexes whatever is in samples/):
 python -m app.eval.run_eval --eval-set path/to/your_eval_set.json
+
+# Compare retrieval strategies (see "Hybrid retrieval" below):
+python -m app.eval.run_eval --retrieval-mode vector
+python -m app.eval.run_eval --retrieval-mode hybrid
 ```
 
 What it reports per config:
@@ -237,6 +247,39 @@ accuracy holds at 96% across configs, with the one dip at 256-token chunks and
 ships `512 / top_k=5` — top accuracy with latency in the better half of the range.
 On a larger corpus the configs would start to separate on hit rate; the harness
 exists to catch exactly that.
+
+## Hybrid retrieval: BM25 + vector
+
+Retrieval fuses a lexical **BM25** retriever with the semantic **vector**
+retriever using Reciprocal Rank Fusion. Vector search matches meaning; BM25
+matches exact tokens — codes, numbers, rare names — that embeddings tend to
+smear. Set `RETRIEVAL_MODE=vector` to disable and compare.
+
+```bash
+python -m app.eval.run_eval --retrieval-mode vector --eval-set your_set.json
+python -m app.eval.run_eval --retrieval-mode hybrid --eval-set your_set.json
+```
+
+**A/B benchmark.** Run on a mixed, fact-dense corpus — a 32-page car-spec **PDF**,
+an ~18KB product-requirements **Markdown** doc, and a **DOCX** engineering
+writeup (30 questions, many exact-value lookups like a top speed, a torque
+figure, an API name). That corpus is third-party / proprietary and is **not
+bundled** here; the numbers are reproducible on any corpus via `--retrieval-mode`.
+
+| chunk 512, top_k | metric | vector | hybrid |
+|------------------|-----------|--------|----------|
+| 2                | hit rate  | 93.3%  | **96.7%** |
+| 2                | answer acc| 86.7%  | **90.0%** |
+| 3–5              | hit rate  | 96.7%  | 96.7%    |
+| 3–5              | answer acc| 90.0%  | 90.0%    |
+
+The gain is concentrated at **tight top-k**: at `top_k=2` hybrid recovers an
+exact-token question that vector ranks just out of the window, lifting hit rate
+93.3% → 96.7% and answer accuracy 86.7% → 90.0%. At generous `top_k` (3–5) both
+saturate — vector already puts the right chunk in the wider window, so fusion has
+nothing to add. Takeaway: hybrid buys **precision under a tight retrieval
+budget**; on a small corpus with roomy top-k it's a no-op. The eval is what tells
+you which regime you're in, rather than assuming a win.
 
 ## Deploy to Railway
 
