@@ -29,9 +29,10 @@ from llama_index.core import Settings as LISettings
 from llama_index.core import StorageContext, VectorStoreIndex, get_response_synthesizer
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.prompts import PromptTemplate
-from llama_index.core.retrievers import VectorIndexRetriever
+from llama_index.core.retrievers import QueryFusionRetriever, VectorIndexRetriever
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
+from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from tabulate import tabulate
 
@@ -92,7 +93,7 @@ def build_index(client, chunk_size: int, overlap: int, settings) -> tuple[Vector
         nodes.extend(splitter.get_nodes_from_documents(docs))
 
     index = VectorStoreIndex(nodes, storage_context=storage)
-    return index, len(nodes)
+    return index, nodes
 
 
 def retrieval_hit(nodes, item: dict) -> bool:
@@ -113,9 +114,24 @@ def judge(llm, question: str, expected: str, actual: str) -> bool:
     return verdict.startswith("YES")
 
 
-def run_config(client, chunk_size, overlap, top_k, eval_set, settings, llm) -> dict:
-    index, n_chunks = build_index(client, chunk_size, overlap, settings)
-    retriever = VectorIndexRetriever(index=index, similarity_top_k=top_k)
+def build_retriever(index, nodes, top_k, retrieval_mode):
+    vector = VectorIndexRetriever(index=index, similarity_top_k=top_k)
+    if retrieval_mode == "hybrid":
+        bm25 = BM25Retriever.from_defaults(nodes=nodes, similarity_top_k=top_k)
+        return QueryFusionRetriever(
+            [vector, bm25],
+            mode="reciprocal_rerank",
+            num_queries=1,
+            similarity_top_k=top_k,
+            use_async=False,
+        )
+    return vector
+
+
+def run_config(client, chunk_size, overlap, top_k, eval_set, settings, llm, retrieval_mode) -> dict:
+    index, nodes = build_index(client, chunk_size, overlap, settings)
+    n_chunks = len(nodes)
+    retriever = build_retriever(index, nodes, top_k, retrieval_mode)
     synthesizer = get_response_synthesizer(text_qa_template=QA_PROMPT)
 
     hits = 0
@@ -151,6 +167,7 @@ def main() -> None:
     parser.add_argument("--top-k", type=int, nargs="+", default=[3, 5])
     parser.add_argument("--json", type=str, default=None, help="Optional path to write raw results.")
     parser.add_argument("--eval-set", type=str, default=None, help="Path to an alternative eval set JSON (defaults to eval_set.json).")
+    parser.add_argument("--retrieval-mode", choices=["vector", "hybrid"], default="hybrid", help="Retrieval strategy to evaluate.")
     args = parser.parse_args()
 
     settings = get_settings()
@@ -164,13 +181,16 @@ def main() -> None:
 
     print(
         f"Running eval: {len(eval_set)} questions x "
-        f"{len(args.chunk_sizes) * len(args.overlaps) * len(args.top_k)} configs\n"
+        f"{len(args.chunk_sizes) * len(args.overlaps) * len(args.top_k)} configs "
+        f"[retrieval={args.retrieval_mode}]\n"
     )
 
     results = []
     for chunk_size, overlap, top_k in product(args.chunk_sizes, args.overlaps, args.top_k):
         print(f"  -> chunk_size={chunk_size}, overlap={overlap}, top_k={top_k} ...")
-        results.append(run_config(client, chunk_size, overlap, top_k, eval_set, settings, llm))
+        results.append(
+            run_config(client, chunk_size, overlap, top_k, eval_set, settings, llm, args.retrieval_mode)
+        )
 
     results.sort(key=lambda r: (r["answer_accuracy"], r["hit_rate"]), reverse=True)
 

@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     chunk_overlap: int = 64
     top_k: int = 5
     max_tokens: int = 512
+    retrieval_mode: str = "hybrid"         # "vector" (semantic only) | "hybrid" (BM25 + vector, RRF-fused)
 
     # --- Rate limiting / cost backstop ---
     upstash_redis_rest_url: str = ""

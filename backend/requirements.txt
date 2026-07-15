@@ -10,6 +10,7 @@ llama-index-core>=0.12
 llama-index-llms-openai>=0.3
 llama-index-embeddings-openai>=0.3
 llama-index-vector-stores-chroma>=0.4
+llama-index-retrievers-bm25>=0.5    # lexical retriever for hybrid search
 chromadb>=0.5
 
 # Document parsing

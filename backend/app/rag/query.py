@@ -4,11 +4,11 @@ from typing import Iterator
 
 from llama_index.core import get_response_synthesizer
 from llama_index.core.prompts import PromptTemplate
-from llama_index.core.retrievers import VectorIndexRetriever
+from llama_index.core.retrievers import QueryFusionRetriever, VectorIndexRetriever
 from llama_index.core.schema import NodeWithScore
 
 from ..config import get_settings
-from .index import configure_models, get_index, token_counter
+from .index import configure_models, get_bm25_retriever, get_index, token_counter
 
 NOT_FOUND_MESSAGE = "I couldn't find that in the provided documents."
 
@@ -50,10 +50,31 @@ class RetrievalResult:
 
 
 def retrieve(question: str, top_k: int | None = None) -> list[NodeWithScore]:
+    """Retrieve the top-k chunks for a question.
+
+    In "hybrid" mode, a BM25 (lexical) retriever and the vector (semantic)
+    retriever are fused with Reciprocal Rank Fusion so exact-token matches
+    (codes, numbers, rare names) and paraphrase matches both surface. Falls back
+    to vector-only when the corpus is empty or mode is "vector".
+    """
     s = get_settings()
     configure_models()
-    retriever = VectorIndexRetriever(index=get_index(), similarity_top_k=top_k or s.top_k)
-    return retriever.retrieve(question)
+    k = top_k or s.top_k
+    vector = VectorIndexRetriever(index=get_index(), similarity_top_k=k)
+
+    if s.retrieval_mode == "hybrid":
+        bm25 = get_bm25_retriever(k)
+        if bm25 is not None:
+            fusion = QueryFusionRetriever(
+                [vector, bm25],
+                mode="reciprocal_rerank",
+                num_queries=1,            # use the question as-is; no extra LLM calls
+                similarity_top_k=k,
+                use_async=False,
+            )
+            return fusion.retrieve(question)
+
+    return vector.retrieve(question)
 
 
 def answer_stream(question: str, top_k: int | None = None) -> RetrievalResult:

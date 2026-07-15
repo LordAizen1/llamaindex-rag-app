@@ -12,8 +12,10 @@ from llama_index.core import Settings as LISettings
 from llama_index.core import StorageContext, VectorStoreIndex
 from llama_index.core.callbacks import CallbackManager, TokenCountingHandler
 from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.schema import TextNode
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
+from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from ..config import get_settings
@@ -21,6 +23,7 @@ from .parsers import parse_file
 
 _client: chromadb.ClientAPI | None = None
 _index: VectorStoreIndex | None = None
+_bm25_retriever: BM25Retriever | None = None
 token_counter = TokenCountingHandler()
 
 
@@ -66,6 +69,50 @@ def get_index() -> VectorStoreIndex:
     return _index
 
 
+def _all_nodes_from_store() -> list[TextNode]:
+    """Reconstruct every stored chunk as a TextNode from the Chroma collection.
+
+    BM25 keeps its own in-memory index, so it needs the raw text + metadata that
+    Chroma already holds. Metadata (source/page/section) is preserved so citations
+    from BM25-retrieved nodes render exactly like vector-retrieved ones.
+    """
+    res = get_collection().get(include=["documents", "metadatas"])
+    ids = res.get("ids") or []
+    docs = res.get("documents") or []
+    metas = res.get("metadatas") or []
+    nodes: list[TextNode] = []
+    for i, text in enumerate(docs):
+        if not text:
+            continue
+        node = TextNode(text=text, metadata=metas[i] or {} if i < len(metas) else {})
+        if i < len(ids) and ids[i]:
+            node.id_ = ids[i]
+        nodes.append(node)
+    return nodes
+
+
+def get_bm25_retriever(top_k: int) -> BM25Retriever | None:
+    """Lazily build (and cache) a BM25 retriever over the current corpus.
+
+    Returns None when the corpus is empty. The cache is invalidated by
+    `invalidate_bm25()` whenever documents are added or removed.
+    """
+    global _bm25_retriever
+    if _bm25_retriever is None:
+        nodes = _all_nodes_from_store()
+        if not nodes:
+            return None
+        _bm25_retriever = BM25Retriever.from_defaults(nodes=nodes, similarity_top_k=top_k)
+    _bm25_retriever.similarity_top_k = top_k
+    return _bm25_retriever
+
+
+def invalidate_bm25() -> None:
+    """Drop the cached BM25 index so it rebuilds on next query (corpus changed)."""
+    global _bm25_retriever
+    _bm25_retriever = None
+
+
 def ingest_file(
     path: str,
     filename: str,
@@ -83,6 +130,7 @@ def ingest_file(
     nodes = splitter.get_nodes_from_documents(documents)
     index = get_index()
     index.insert_nodes(nodes)
+    invalidate_bm25()  # corpus changed; BM25 must rebuild
     return len(nodes)
 
 
@@ -110,6 +158,7 @@ def delete_document(source: str) -> int:
     ids = before.get("ids") or []
     if ids:
         collection.delete(where={"source": source})
+        invalidate_bm25()  # corpus changed; BM25 must rebuild
     return len(ids)
 
 
